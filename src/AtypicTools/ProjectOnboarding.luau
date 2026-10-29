@@ -18,6 +18,29 @@ function ProjectOnboarding._LoadAnimation(total: number, loaded: number, progres
 	)
 end
 
+function ProjectOnboarding.PollLoadingThread(loading_state: FontLibraryInterpreter.LoadingState)
+    while not loading_state.StartTime or loading_state.ExpectedFonts == 0 do
+		task.wait(loading_state.ThrottleInterval or 0.1)
+	end
+
+	while loading_state.LoadedFonts < loading_state.ExpectedFonts do
+		task.wait(loading_state.ThrottleInterval or 0.1)
+	end
+
+	local startTime: number = loading_state.StartTime :: number
+	local elapsed_ms: number = (os.clock() - startTime) * 1000
+
+	local benchmark = string.format(
+		'[AtypicTextRenderer]: [%d/%d] fonts loaded. (took %.3f ms)',
+		loading_state.LoadedFonts,
+		loading_state.ExpectedFonts,
+		elapsed_ms
+	)
+	print(benchmark)
+	PluginInterface.GUI.ContentFrame.Onboarding.Visible = true
+	PluginInterface.GUI.ContentFrame.Onboarding.Status.Text = "initialized."
+end
+
 function ProjectOnboarding.StartProject(check_state: FontLibraryInterpreter.LibraryCheckState, module: ModuleScript, required_module: FontLibraryInterpreter.LibraryModule)
 	local loading_bar = PluginInterface.GUI.ContentFrame.Overlays.Loader
 	local progress_bar = loading_bar.InnerFrame.ProgressBar
@@ -28,18 +51,20 @@ function ProjectOnboarding.StartProject(check_state: FontLibraryInterpreter.Libr
 	loading_bar.Visible = true
 	progress_bar.Size = UDim2.new(0, 0, progress_bar.Size.Y.Scale, progress_bar.Size.Y.Offset)
 
-	local loading_state = FontLibraryInterpreter.LoadingState
-	local elapsed_ms = (os.clock() - loading_state.StartTime) * 1000
-	local benchmark = string.format(
-		'[AtypicTextRenderer]: [%d/%d] fonts loaded. (took %.3f ms)',
-		loading_state.LoadedFonts,
-		loading_state.ExpectedFonts,
-		elapsed_ms
-	)
-	print(benchmark)
-	loading_bar.Visible = false
-	PluginInterface.GUI.ContentFrame.Onboarding.Visible = true
-	PluginInterface.GUI.ContentFrame.Onboarding.Status.Text = "initialed..."
+    local loading_state = FontLibraryInterpreter.LoadingState
+	local task_thread: thread? = task.spawn(ProjectOnboarding.PollLoadingThread, loading_state)
+
+    FontLibraryInterpreter.ReadFonts(module, function(loaded, total)
+		local progressRatio = loaded / total
+		progress_bar.Size = UDim2.new(progressRatio, 0, progress_bar.Size.Y.Scale, progress_bar.Size.Y.Offset)
+	end)
+
+    if task_thread then
+        task.cancel(task_thread)
+        task_thread = nil
+    end
+
+    loading_bar.Visible = false
 end
 
 function ProjectOnboarding.SelectionChanged()

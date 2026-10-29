@@ -1,19 +1,22 @@
 
 --!strict
 
-type LoadingState = {
+export type LoadingState = {
 	LoadedFonts: number,
 	ExpectedFonts: number,
-	StartTime: number
+    ThrottleInterval: number,
+	StartTime: number?,
 }
 
 local FontLibraryInterpreter = {}
 local FontTypeWrapper = require(script.Parent.FontTypeWrapper)
 local Maid = require(script.Parent.Maid)
 
+-- NOTE: in the case of it being replicatable, make it a self object
 FontLibraryInterpreter.LoadingState = {
 	LoadedFonts = 0,
 	ExpectedFonts = 0,
+    ThrottleInterval = 1 / 10
 } :: LoadingState
 
 export type LibraryCheckState =
@@ -89,15 +92,15 @@ function FontLibraryInterpreter.CheckTypeFields(
 	return true
 end
 
-function FontLibraryInterpreter.ReadFonts(module: ModuleScript, on_progress: ProgressCallback?)
+function FontLibraryInterpreter.ReadFonts(module: ModuleScript, on_progress: ProgressCallback?): {FontTypeWrapper.FontBuffer}
 	local required_module, _ = Maid.RequireFreshLibrary(module)
 	local valid_fonts: {FontTypeWrapper.FontBuffer} = FontLibraryInterpreter.FilterFonts(required_module, module)
 
 	local total = #valid_fonts
 
+    FontLibraryInterpreter.LoadingState.StartTime = os.clock()
 	FontLibraryInterpreter.LoadingState.ExpectedFonts = total
 	FontLibraryInterpreter.LoadingState.LoadedFonts = 0
-	FontLibraryInterpreter.LoadingState.StartTime = os.clock()
 
 	for _, font in valid_fonts do
 		if STRESS_TEST then
