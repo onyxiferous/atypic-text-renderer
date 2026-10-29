@@ -6,11 +6,13 @@ TextRenderer.__index = TextRenderer
 -- atypic font renderer
 -- used for rendering fonts & glyphs through a special pipeline
 
-local FontLibrary = require(script.FontLibrary)
+local ATFont = require(script.ATFont)
+
+-- Renderer types
 
 export type RendererTask = {Threads: {RBXScriptConnection | RBXScriptSignal}}
 
-export type self = {CachedFonts: {FontLibrary.FontObject}, Renderer: RendererTask}
+export type self = {CachedFonts: {ATFont.FontObject}, Renderer: RendererTask}
 export type TextRenderer = typeof(setmetatable({} :: self, TextRenderer))
 
 function TextRenderer.new()
@@ -19,13 +21,14 @@ function TextRenderer.new()
 	return self
 end
 
-function TextRenderer.ReloadFontCache(self: TextRenderer, keepCache: boolean?): {FontLibrary.FontObject}
-    local fontList = keepCache and self.CachedFonts or {}
+function TextRenderer.ReloadFontCache(self: TextRenderer, keepCache: boolean?): {ATFont.FontObject} | any
+    --[[local fontList = keepCache and self.CachedFonts or {}
 	for _, fontEntry in FontLibrary.RegisteredFonts do
         table.insert(fontList, fontEntry)
 	end
 
-    return fontList
+    return fontList--]]
+	return
 end
 
 return TextRenderer
