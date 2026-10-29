@@ -1,0 +1,11 @@
+# files marked as private and tokens
+
+private*
+*token*
+
+# serversided logic
+
+server
+secure
+ssl*
+http*

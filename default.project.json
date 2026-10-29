@@ -1,0 +1,17 @@
+{
+    "name": "TextRendererProject",
+    "tree": {
+        "$className": "DataModel",
+        "StarterGui": {
+            "TextRendererProject": {
+                "$className": "ScreenGui",
+                "GUIScript": {
+                    "$path": "src/GUIScript.client.luau"
+                },
+                "AtypicTextRenderer": {
+                    "$path": "src/AtypicTextRenderer"
+                }
+            }
+        }
+    }
+}
