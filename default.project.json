@@ -12,6 +12,18 @@
                     "$path": "src/AtypicTextRenderer"
                 }
             }
+        },
+        "ReplicatedStorage": {
+            "$className": "ReplicatedStorage",
+            "Plugins": {
+                "$className": "Folder",
+                "AtypicTools": {
+                    "$className": "Folder",
+                    "AtypicFontTool": {
+                        "$path": "src/AtypicTools"
+                    }
+                }
+            }
         }
     }
 }
